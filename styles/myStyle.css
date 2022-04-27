@@ -1,0 +1,44 @@
+body {
+    background: linear-gradient(180deg, #b0e3ec, #f1e7dc);
+    height: 100%;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
+    padding: 1em 0;
+}
+
+footer {
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    padding: 1em 0em;
+    background-color: white;
+}
+
+.center-content {
+    margin: auto;
+    left: 0;
+    right: 0;
+}
+
+nav {
+    width: 100vw;
+}
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 0.3em;
+}
+
+table {
+    margin: auto;
+    left: 0;
+    right: 0;
+}
+
+article{
+    text-align: center;
+}
