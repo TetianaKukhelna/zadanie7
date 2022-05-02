@@ -115,6 +115,43 @@ ALTER TABLE `visitors`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 COMMIT;
 
+
+--
+-- Table structure for table `info`
+--
+
+CREATE TABLE `info` (
+  `id` int UNSIGNED NOT NULL,
+  `country` varchar(64) COLLATE utf8_slovak_ci NOT NULL,
+  `country_kod` varchar(8) COLLATE utf8_slovak_ci NOT NULL,
+  `city` varchar(64) COLLATE utf8_slovak_ci NOT NULL,
+  `longtitude` int NOT NULL,
+  `latitude` int NOT NULL,
+  `data_time` timestamp NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_slovak_ci;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `info`
+--
+ALTER TABLE `info`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `info`
+--
+ALTER TABLE `info`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+COMMIT;
+
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

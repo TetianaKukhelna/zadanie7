@@ -11,6 +11,8 @@ try {
 $ipaddress = getenv("REMOTE_ADDR"); //ip
 $json = file_get_contents("http://ip-api.com/json/$ipaddress");
 $json = json_decode($json);
+
+print_r($json);
 $country = $json->country; //country
 $flag = $json->countryCode; //flag
 
@@ -41,11 +43,33 @@ function visitorTime($visitor){
 }
 
 if(!visitorExist($visitors, $ipaddress, $country)){
-    $stmt = $conn->prepare("INSERT INTO visitors(ip, country, visit) VALUES ('".$ipaddress."','".$country."','".date('Y-m-d H:i:s', time())."')");
-    $stmt->execute();
 
-    $stmt = $conn->prepare("SELECT * FROM stats_visits");
-    $stmt->execute();
+    $sql = "insert into info (
+        city,
+        country,
+        country_kod,
+        data_time,
+        latitude,
+        longtitude)
+    values (
+        :city,
+        :country,
+        :country_kod,
+        :data_time,
+        :latitude,
+        :longtitude)
+    ;";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([
+        ':city'=>$json->city,
+        ':country'=>$json->country,
+        ':country_kod' => $json->countryCode,
+        ':data_time' => date('Y-m-d H:i:s', time()),
+        ':latitude' => $json->lat,
+        ':longtitude' => $json->lon
+    ]);
+
     $stats = $stmt->fetchAll(PDO::FETCH_NUM);
 
     $tmp = 0;
@@ -56,6 +80,7 @@ if(!visitorExist($visitors, $ipaddress, $country)){
             $countryExist = true;
         }
     }
+
 
     if($countryExist == false){
         $stmt = $conn->prepare("INSERT INTO stats_visits(country, sumary, country_code) VALUES ('".$country."','". 1 ."','".strtolower($flag)."')");
