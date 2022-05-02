@@ -77,13 +77,12 @@ $json = new stdclass();
 
 $cords = $lat . ", " . $lng;
 
-$url  = "https://restcountries.com/v3.1/name/".$address['country'];
+$url  = "https://restcountries.com/v3.1/alpha/".$address['country_code'];
 
 $json = file_get_contents($url);
-print_r($json);
 
 $json = json_decode($json);
-$maintown = $json[0]->capital;
+$maintown = implode(', ',$json[0]->capital);
 ?>
 
 <!DOCTYPE html>
