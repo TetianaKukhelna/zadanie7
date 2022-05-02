@@ -2,11 +2,6 @@
 
 require_once 'database/config.php';
 
-$ipaddress = getenv("REMOTE_ADDR");
-$json = file_get_contents("http://ip-api.com/json/$ipaddress");
-$json = json_decode($json);
-$zip = str_replace(" ", "",$json->zip);
-
 $lat = $_GET['lat'];
 $lng = $_GET['lng'];
 
@@ -31,8 +26,9 @@ $json = json_decode($json);
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script async
-    src="https://maps.googleapis.com/maps/api/js?key=<?=PLACES_API_KEY?>&libraries=places&callback=initMap">
+   
+<script src="scripts/script.js"></script>
+ <script async src="https://maps.googleapis.com/maps/api/js?key=<?=PLACES_API_KEY?>&libraries=places&callback=initMap">
 </script>
  <link rel="stylesheet" href="styles/myStyle.css">
 </head>
@@ -46,7 +42,7 @@ $json = json_decode($json);
     </header>
     <article class="container">
         <div class="input-group mb-3">
-            <input id="pac-input"  type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="basic-addon2">
+            <input id="pac-input"  type="text" class="form-control" placeholder="Address here" aria-label="Recipient's username" aria-describedby="basic-addon2">
         </div>
 
         <?php

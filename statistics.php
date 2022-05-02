@@ -97,6 +97,19 @@ if(!visitorExist($visitors, $ipaddress, $country)){
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="styles/myStyle.css">
+    <script>
+        var json = [
+            {"id":48,"title":"Helgelandskysten","longitude":"12.63376","latitude":"66.02219"},
+            {"id":46,"title":"Tysfjord","longitude":"16.50279","latitude":"68.03515"},
+            {"id":44,"title":"Sledehunds-ekspedisjon","longitude":"7.53744","latitude":"60.08929"},
+            {"id":43,"title":"Amundsens sydpolferd","longitude":"11.38411","latitude":"62.57481"},
+            {"id":39,"title":"Vikingtokt","longitude":"6.96781","latitude":"60.96335"},
+            {"id":6,"title":"Tungtvann- sabotasjen","longitude":"8.49139","latitude":"59.87111"}
+        ];
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <script src="scripts/statistic.js"></script>
 </head>
 <body class="d-flex flex-column min-vh-100">
 <div class="wrapper flex-grow-1 center-content">
@@ -105,7 +118,9 @@ if(!visitorExist($visitors, $ipaddress, $country)){
         <h1>Štatistika návštevnosti</h1>
     </header>
     <article>
-        <?php
+    <div id="map-canvas" style="width: 100%; height: 600px;"></div>
+
+     <?php
         $stmt = $conn->prepare("SELECT country, sumary, country_code FROM stats_visits ORDER BY sumary");
         $stmt->execute();
         $visitors = $stmt->fetchAll(PDO::FETCH_NUM);
@@ -116,15 +131,13 @@ if(!visitorExist($visitors, $ipaddress, $country)){
                 <th>Krajina</th>
                 <th>Počet návštev</th>
             </tr>
-            <?php
-            for($i = 0; $i < count($visitors); $i++){
+            <?php for($i = 0; $i < count($visitors); $i++):
                 echo "<tr>";
                     echo "<td><img src='https://ipdata.co/flags/".$visitors[$i][2].".png' alt='".$visitors[$i][2]."'></td>";
                     echo "<td>".$visitors[$i][0]."</td>";
                     echo "<td>".$visitors[$i][1]."</td>";
                 echo "</tr>";
-            }
-            ?>
+            endfor; ?>
         </table>
     </article>
 </div>

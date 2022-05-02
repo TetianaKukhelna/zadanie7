@@ -5,6 +5,9 @@ MYSQL_USER = xkukhelna
 MYSQL_PASS = Tina246426-
 MYSQL_PORT = 3666
 
+server:
+	php -S localhost:8000
+	
 ps:
 	docker-compose ps
 
