@@ -82,7 +82,9 @@ $url  = "https://restcountries.com/v3.1/alpha/".$address['country_code'];
 $json = file_get_contents($url);
 
 $json = json_decode($json);
-$maintown = implode(', ',$json[0]->capital);
+if($json) {
+    $maintown = implode(', ',$json[0]->capital);
+}
 ?>
 
 <!DOCTYPE html>
