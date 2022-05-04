@@ -78,6 +78,7 @@ $stmt->execute([
         <?php include "includes/nav.php";?>
         <h1>Štatistika návštevnosti</h1>
     </header>
+    <div class="container">
     <article>
     <?php 
         $country_code = $_GET['country'];
@@ -90,7 +91,7 @@ $stmt->execute([
             $visitors = $stmt->fetchAll(PDO::FETCH_ASSOC);
      ?>
 
-<table>
+<table class="table">
       <?php foreach($visitors as $visitor):?>
             <tr>
             <td><img src="https://ipdata.co/flags/<?=strtolower($visitor['country_kod'])?>.png" alt="<?$visitor['country']?>"/> </td>
@@ -108,7 +109,7 @@ $stmt->execute([
     $visitors = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     ?>
-   <table>
+   <table class="table">
        <tr>
            <th></th>
            <th>Krajina</th>
@@ -122,9 +123,42 @@ $stmt->execute([
            </tr>
        <?php endforeach; ?>
    </table>
+
+        <?php 
+
+            $sql = "SELECT country, country_kod, count(*)  as visitors, '0 - 6' as period from info WHERE HOUR(data_time) > 0 AND HOUR(data_time) <= 6 group by country, country_kod Union ALL
+            SELECT country, country_kod, count(*)  as visitors, '6 - 12' as period from info WHERE HOUR(data_time) > 6 AND HOUR(data_time) <= 12 group by country, country_kod Union ALL
+            SELECT country, country_kod, count(*)  as visitors, '12 - 18' as period from info WHERE HOUR(data_time) > 12 AND HOUR(data_time) <= 18 group by country, country_kod Union ALL
+            SELECT country, country_kod, count(*)  as visitors, '18 - 24' as period from info WHERE HOUR(data_time) > 18 AND HOUR(data_time) <= 24 group by country, country_kod";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->execute();
+            $visitors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        ?>
+    <table class="table">
+       <tr>
+           <th></th>
+           <th>Period</th>
+            <th>Krajina</th>
+           <th>Počet návštev</th>
+           
+       </tr>
+       <?php foreach($visitors as $visitor):?>
+           <tr>
+           <td><img src="https://ipdata.co/flags/<?=strtolower($visitor['country_kod'])?>.png" alt="<?$visitor['country']?>" /></td>
+           <td><?=$visitor['period']?></td>
+           <td><?=$visitor['country']?></td>
+           <td><?=$visitor['visitors']?></td>
+           </tr>
+       <?php endforeach; ?>
+   </table>
+
+
     <?php endif;?>
    
     </article>
+       </div>
 </div>
 <?php include "includes/footer.php";?>
 </body>
