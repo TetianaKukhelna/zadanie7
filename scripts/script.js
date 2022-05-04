@@ -6,7 +6,7 @@ function initMap() {
     const input = document.getElementById("pac-input");
     const options = {
 
-      componentRestrictions: { country: "us" },
+      componentRestrictions: { country: "sk" },
     //   fields: ["address_components", "geometry", "icon", "name"],
       strictBounds: false,
       types: ["establishment"],
