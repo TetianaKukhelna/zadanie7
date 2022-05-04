@@ -12,103 +12,38 @@ $ipaddress = getenv("REMOTE_ADDR"); //ip
 $json = file_get_contents("http://ip-api.com/json/$ipaddress");
 $json = json_decode($json);
 
-print_r($json);
 $country = $json->country; //country
 $flag = $json->countryCode; //flag
 
 $stmt = $conn->prepare("SELECT ip, visit, id, country FROM visitors");
 $stmt->execute();
-$visitors = $stmt->fetchAll(PDO::FETCH_NUM);
+$visitors = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-function visitorExist($visitors, $ipaddress, $country){
-    foreach($visitors as $visitor){
-        if($ipaddress == $visitor[0] && $country == $visitor[3]){
-            return true;
-        }
-    }
-    return false;
-}
+$sql = "insert into info (
+    city,
+    country,
+    country_kod,
+    data_time,
+    latitude,
+    longtitude)
+values (
+    :city,
+    :country,
+    :country_kod,
+    :data_time,
+    :latitude,
+    :longtitude)
+;";
 
-function visitorTime($visitor){
-    $time_now = date('Y-m-d H:i:s', time());
-    $time_diff = $visitor[1];
-    $time_now = date_create_from_format('Y-m-d H:i:s', $time_now);
-    $time_diff = date_create_from_format('Y-m-d H:i:s', $time_diff);
-    $time = $time_now->diff($time_diff);
-    $tmp = $time->f + $time->s + $time->i*60 + $time->h*3600 + $time->d*86400;
-    if($tmp > 86400){ //day time in seconds
-        return true;
-    }
-    return false;
-}
-
-if(!visitorExist($visitors, $ipaddress, $country)){
-
-    $sql = "insert into info (
-        city,
-        country,
-        country_kod,
-        data_time,
-        latitude,
-        longtitude)
-    values (
-        :city,
-        :country,
-        :country_kod,
-        :data_time,
-        :latitude,
-        :longtitude)
-    ;";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([
-        ':city'=>$json->city,
-        ':country'=>$json->country,
-        ':country_kod' => $json->countryCode,
-        ':data_time' => date('Y-m-d H:i:s', time()),
-        ':latitude' => $json->lat,
-        ':longtitude' => $json->lon
-    ]);
-
-    $stats = $stmt->fetchAll(PDO::FETCH_NUM);
-
-    $tmp = 0;
-    $countryExist = false;
-    foreach($stats as $s){
-        if($s[1] == $country){
-            $tmp++;
-            $countryExist = true;
-        }
-    }
-
-
-    if($countryExist == false){
-        $stmt = $conn->prepare("INSERT INTO stats_visits(country, sumary, country_code) VALUES ('".$country."','". 1 ."','".strtolower($flag)."')");
-        $stmt->execute();
-    }else{
-        $stmt = $conn->prepare("UPDATE stats_visits SET sumary='".($tmp+1)."' WHERE country='".$country."'");
-        $stmt->execute();
-    }
-
-
-}else{
-    foreach ($visitors as $visitor){
-        if($ipaddress == $visitor[0] && visitorTime($visitor) && $country == $visitor[3]){
-            $stmt = $conn->prepare("UPDATE visitors SET visit='".date('Y-m-d H:i:s', time())."' WHERE ip='".$ipaddress."'");
-            $stmt->execute();
-
-            $tmp = 0;
-            foreach($visitors as $v){
-                if($country == $v[3]){
-                    $tmp++;
-                }
-            }
-            $stmt = $conn->prepare("UPDATE stats_visits SET sumary='".$tmp."' WHERE country='".$country."'");
-            $stmt->execute();
-        }
-    }
-}
-
+$stmt = $conn->prepare($sql);
+$stmt->execute([
+    ':city'=>$json->city,
+    ':country'=>$json->country,
+    ':country_kod' => $json->countryCode,
+    ':data_time' => date('Y-m-d H:i:s', time()),
+    ':latitude' => $json->lat,
+    ':longtitude' => $json->lon
+]);
 ?>
 
 <!DOCTYPE html>
@@ -123,14 +58,15 @@ if(!visitorExist($visitors, $ipaddress, $country)){
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="styles/myStyle.css">
     <script>
-        var json = [
-            {"id":48,"title":"Helgelandskysten","longitude":"12.63376","latitude":"66.02219"},
-            {"id":46,"title":"Tysfjord","longitude":"16.50279","latitude":"68.03515"},
-            {"id":44,"title":"Sledehunds-ekspedisjon","longitude":"7.53744","latitude":"60.08929"},
-            {"id":43,"title":"Amundsens sydpolferd","longitude":"11.38411","latitude":"62.57481"},
-            {"id":39,"title":"Vikingtokt","longitude":"6.96781","latitude":"60.96335"},
-            {"id":6,"title":"Tungtvann- sabotasjen","longitude":"8.49139","latitude":"59.87111"}
-        ];
+
+        <?php 
+        $stmt = $conn->prepare("select id, CONCAT(country,' ', city) as title, latitude, longtitude as longitude, data_time from info");
+        $stmt->execute();
+        $visitors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        ?>
+
+        var json = <?=json_encode($visitors)?>;
 
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
@@ -143,27 +79,51 @@ if(!visitorExist($visitors, $ipaddress, $country)){
         <h1>Štatistika návštevnosti</h1>
     </header>
     <article>
-    <div id="map-canvas" style="width: 100%; height: 600px;"></div>
+    <?php 
+        $country_code = $_GET['country'];
+        if($country_code):
 
-     <?php
-        $stmt = $conn->prepare("SELECT country, sumary, country_code FROM stats_visits ORDER BY sumary");
-        $stmt->execute();
-        $visitors = $stmt->fetchAll(PDO::FETCH_NUM);
-        ?>
-        <table>
+            $stmt = $conn->prepare("select id, country, country_kod, CONCAT(country,' ', city) as title, latitude, longtitude as longitude, data_time from info WHERE country_kod=:country_kod");
+            $stmt->execute([
+                ':country_kod' => $country_code
+            ]);
+            $visitors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+     ?>
+
+<table>
+      <?php foreach($visitors as $visitor):?>
             <tr>
-                <th></th>
-                <th>Krajina</th>
-                <th>Počet návštev</th>
+            <td><img src="https://ipdata.co/flags/<?=strtolower($visitor['country_kod'])?>.png" alt="<?$visitor['country']?>"/> </td>
+            <td><?=$visitor['title']?></td>
+            <td><?=$visitor['data_time']?></td>
             </tr>
-            <?php for($i = 0; $i < count($visitors); $i++):
-                echo "<tr>";
-                    echo "<td><img src='https://ipdata.co/flags/".$visitors[$i][2].".png' alt='".$visitors[$i][2]."'></td>";
-                    echo "<td>".$visitors[$i][0]."</td>";
-                    echo "<td>".$visitors[$i][1]."</td>";
-                echo "</tr>";
-            endfor; ?>
-        </table>
+       <?php endforeach; ?>
+       </table>
+    <?php else: ?>
+        <div id="map-canvas" style="width: 100%; height: 600px;"></div>
+
+    <?php
+    $stmt = $conn->prepare("select country, country_kod, count(*) as visitors from info group by country, country_kod ORDER BY visitors");
+    $stmt->execute();
+    $visitors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    ?>
+   <table>
+       <tr>
+           <th></th>
+           <th>Krajina</th>
+           <th>Počet návštev</th>
+       </tr>
+       <?php foreach($visitors as $visitor):?>
+           <tr>
+           <td><img src="https://ipdata.co/flags/<?=strtolower($visitor['country_kod'])?>.png" alt="<?$visitor['country']?>" /></td>
+           <td><a href="?country=<?=$visitor['country_kod']?>"><?=$visitor['country']?></a></td>
+           <td><?=$visitor['visitors']?></td>
+           </tr>
+       <?php endforeach; ?>
+   </table>
+    <?php endif;?>
+   
     </article>
 </div>
 <?php include "includes/footer.php";?>
